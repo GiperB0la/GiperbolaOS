@@ -12,8 +12,13 @@ public:
 
 private:
     void executeCommand();
+    void clear();
+    void help();
+    void memory();
+    void reboot();
+    void shutdown();
 
 private:
-    char cmdBuffer[128];
+    char buffer[128];
     size_t pos;
 };

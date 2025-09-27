@@ -35,13 +35,22 @@ public:
     void print(char c);
     void print(const char* str);
     void print(const String& str);
-    void print(uint32_t value);
+    void print(int value);
+    void print(unsigned int value);
+    void print(long value);
+    void print(unsigned long value);
+    void print(long long value);
+    void print(unsigned long long value);
+    void print_hex(uint32_t value);
+    void print_hex(unsigned long long value);
     void clear();
     void setColor(uint8_t color);
+    void moveCursorBack();
     static uint8_t vga_color(Color fg, Color bg);
 
 private:
     uint16_t vga_entry(char c, uint8_t color);
+    void print_dec(unsigned long long value);
     void scroll();
     void updateCursor();
 

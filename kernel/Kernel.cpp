@@ -4,18 +4,18 @@
 #include "../arch/x86/interrupts/IDT.hpp"
 #include "../drivers/Keyboard.hpp"
 #include "../shell/Shell.hpp"
+#include "../drivers/Serial.hpp"
+#include "../arch/x86/memory/Memory.hpp"
 
-extern "C" void test_div0() {
-    asm volatile (
-        "movl $1, %eax\n"  // делимое = 1
-        "xorl %edx, %edx\n" // старшие биты = 0
-        "movl $0, %ecx\n"  // делитель = 0
-        "divl %ecx\n"      // EAX = EDX:EAX / ECX → вызовет #DE
-    );
-}
 
-extern "C" void kmain() 
+extern "C" void kmain(uint32_t magic, uint32_t addr)
 {
+    if (magic != MULTIBOOT2_BOOTLOADER_MAGIC) {
+        VGA::instance().print("Invalid multiboot magic: ");
+        VGA::instance().print((uint32_t)magic);
+        while (true) {}
+    }
+
     VGA::instance();
     VGA::instance().print("Booting kernel...\n");
 
@@ -28,13 +28,20 @@ extern "C" void kmain()
     asm volatile("sti");
     VGA::instance().print("Interrupts enabled\n");
 
+    Memory::instance(addr);
+    VGA::instance().print("Memory manager initialized\n");
+
     Keyboard::instance();
     VGA::instance().print("Keyboard activated\n");
 
-    VGA::instance().print("> ");
+    VGA::instance().print("\n> ");
     while (true) {
         if (Keyboard::instance().hasKey()) {
             Shell::instance().handleInput(Keyboard::instance().getChar());
+        }
+
+        if (Serial::instance().hasChar()) {
+            VGA::instance().print(Serial::instance().read());
         }
     }
 }

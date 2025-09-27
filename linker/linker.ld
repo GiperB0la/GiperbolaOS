@@ -1,29 +1,34 @@
-ENTRY(kmain)
+ENTRY(start)
 
 SECTIONS
 {
-	. = 1M;
-	
-	.text BLOCK(4K) : ALIGN(4K)
-	{
-		*(.multiboot)
-		*(.text)
-	}
+    . = 1M;
 
-	.rodata BLOCK(4K) : ALIGN(4K)
-	{
-		*(.rodata)
-	}
+    .multiboot2 :
+    {
+        *(.multiboot2)
+    }
 
-	.data BLOCK(4K) : ALIGN(4K)
-	{
-		*(.data)
-	}
+    .text :
+    {
+        *(.text*)
+    }
 
-	.bss BLOCK(4K) : ALIGN(4K)
-	{
-		*(COMMON)
-		*(.bss)
-		*(.bootstrap_stack)
-	}
+    .rodata :
+    {
+        *(.rodata*)
+    }
+
+    .data :
+    {
+        *(.data*)
+    }
+
+    .bss :
+    {
+        *(.bss*)
+        *(COMMON)
+    }
+
+    end  = .;
 }
