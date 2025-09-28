@@ -11,7 +11,7 @@ public:
     void handleInput(char c);
 
 private:
-    void executeCommand();
+    void execute_command();
     void clear();
     void help();
     void memory();

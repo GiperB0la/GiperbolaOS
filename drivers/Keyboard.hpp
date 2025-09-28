@@ -11,14 +11,14 @@ public:
     static Keyboard& instance();
 
 public:
-    bool hasKey();
-    char getChar();
-    bool isKeyPressed(uint8_t scancode);
+    bool has_key();
+    char get_char();
+    bool is_key_pressed(uint8_t scancode);
     void handler();
 
 private:
     void init();
-    char scancodeToChar(uint8_t scancode);
+    char scancode_char(uint8_t scancode);
 
 private:
     bool keyStates[128];

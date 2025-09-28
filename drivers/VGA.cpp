@@ -50,7 +50,7 @@ void VGA::print(char c)
         scroll();
     }
 
-    updateCursor();
+    update_cursor();
 }
 
 void VGA::print(const char* str)
@@ -60,12 +60,29 @@ void VGA::print(const char* str)
     }
 }
 
-void VGA::print(const String& str)
+void VGA::print_dec(unsigned long long value)
 {
-    const char* p = str.c_str();
-    while (*p) {
-        print(*p++);
+    char buffer[21];
+    int i = 0;
+
+    if (value == 0) {
+        buffer[i++] = '0';
+    } 
+    else {
+        while (value > 0) {
+            buffer[i++] = '0' + (value % 10);
+            value /= 10;
+        }
     }
+    buffer[i] = '\0';
+
+    for (int j = 0; j < i / 2; j++) {
+        char tmp = buffer[j];
+        buffer[j] = buffer[i - j - 1];
+        buffer[i - j - 1] = tmp;
+    }
+
+    print(buffer);
 }
 
 void VGA::print(int value)
@@ -113,32 +130,49 @@ void VGA::print(unsigned long long value)
     print_dec(value);
 }
 
-void VGA::print_dec(unsigned long long value)
+void VGA::print(float value, int precision)
 {
-    char buffer[21];
-    int i = 0;
-
-    if (value == 0) {
-        buffer[i++] = '0';
-    } 
-    else {
-        while (value > 0) {
-            buffer[i++] = '0' + (value % 10);
-            value /= 10;
-        }
-    }
-    buffer[i] = '\0';
-
-    for (int j = 0; j < i / 2; j++) {
-        char tmp = buffer[j];
-        buffer[j] = buffer[i - j - 1];
-        buffer[i - j - 1] = tmp;
+    if (value < 0) {
+        print('-');
+        value = -value;
     }
 
-    print(buffer);
+    unsigned long long int_part = (unsigned long long)value;
+    print_dec(int_part);
+
+    print('.');
+
+    float frac = value - (float)int_part;
+    for (int i = 0; i < precision; i++) {
+        frac *= 10.0f;
+        int digit = (int)frac;
+        print((char)('0' + digit));
+        frac -= digit;
+    }
 }
 
-void VGA::print_hex(uint32_t value)
+void VGA::print(double value, int precision)
+{
+    if (value < 0) {
+        print('-');
+        value = -value;
+    }
+
+    unsigned long long int_part = (unsigned long long)value;
+    print_dec(int_part);
+
+    print('.');
+
+    double frac = value - (double)int_part;
+    for (int i = 0; i < precision; i++) {
+        frac *= 10.0;
+        int digit = (int)frac;
+        print((char)('0' + digit));
+        frac -= digit;
+    }
+}
+
+void VGA::print_hex(unsigned int value)
 {
     static const char* hex_digits = "0123456789ABCDEF";
     char buffer[11];
@@ -157,7 +191,7 @@ void VGA::print_hex(uint32_t value)
 void VGA::print_hex(unsigned long long value)
 {
     static const char* hex_digits = "0123456789ABCDEF";
-    char buffer[19]; // "0x" + 16 символов + '\0'
+    char buffer[19];
     buffer[0] = '0';
     buffer[1] = 'x';
 
@@ -170,6 +204,30 @@ void VGA::print_hex(unsigned long long value)
     print(buffer);
 }
 
+void VGA::print_status(const char* msg, Status status) 
+{
+    set_color(vga_color(Color::LightGray, Color::Black));
+    print(msg);
+    print(" ... ");
+
+    switch (status) {
+        case Status::OK:
+            set_color(vga_color(Color::LightGreen, Color::Black));
+            print("[ OK ]\n");
+            break;
+        case Status::FAIL:
+            set_color(vga_color(Color::LightRed, Color::Black));
+            print("[FAIL]\n");
+            break;
+        case Status::INFO:
+            set_color(vga_color(Color::LightCyan, Color::Black));
+            print("[INFO]\n");
+            break;
+    }
+
+    set_color(vga_color(Color::LightGray, Color::Black));
+}
+
 void VGA::clear()
 {
     for (size_t y = 0; y < VGA_HEIGHT; y++) {
@@ -179,10 +237,10 @@ void VGA::clear()
     }
     terminal_row = 0;
     terminal_col = 0;
-    updateCursor();
+    update_cursor();
 }
 
-void VGA::setColor(uint8_t color)
+void VGA::set_color(uint8_t color)
 {
     terminal_color = color;
 }
@@ -200,7 +258,7 @@ void VGA::scroll()
     terminal_row = VGA_HEIGHT - 1;
 }
 
-void VGA::updateCursor()
+void VGA::update_cursor()
 {
     uint16_t pos = terminal_row * VGA_WIDTH + terminal_col;
     outb(0x3D4, 0x0F);
@@ -209,7 +267,7 @@ void VGA::updateCursor()
     outb(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
 }
 
-void VGA::moveCursorBack()
+void VGA::move_cursor_back()
 {
     if (terminal_col > 0) {
         terminal_col--;
@@ -218,5 +276,5 @@ void VGA::moveCursorBack()
         terminal_row--;
         terminal_col = VGA_WIDTH - 1;
     }
-    updateCursor();
+    update_cursor();
 }

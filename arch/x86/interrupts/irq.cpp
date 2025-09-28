@@ -33,6 +33,6 @@ extern "C" void irq3_handler()
 
 extern "C" void irq4_handler()
 {
-    Serial::instance().handleInterrupt();
+    Serial::instance().handle_interrupt();
     pic_send_eoi(4);
 }

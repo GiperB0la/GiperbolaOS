@@ -3,6 +3,13 @@
 #include <stdint.h>
 #include "../lib/String.hpp"
 
+enum class Status
+{
+    OK,
+    FAIL,
+    INFO
+};
+
 class VGA
 {
 public:
@@ -34,25 +41,27 @@ public:
 public:
     void print(char c);
     void print(const char* str);
-    void print(const String& str);
     void print(int value);
     void print(unsigned int value);
     void print(long value);
     void print(unsigned long value);
     void print(long long value);
     void print(unsigned long long value);
-    void print_hex(uint32_t value);
+    void print(float value, int precision = 6);
+    void print(double value, int precision = 6);
+    void print_hex(unsigned int value);
     void print_hex(unsigned long long value);
+    void print_status(const char* msg, Status status);
     void clear();
-    void setColor(uint8_t color);
-    void moveCursorBack();
+    void set_color(uint8_t color);
+    void move_cursor_back();
     static uint8_t vga_color(Color fg, Color bg);
 
 private:
     uint16_t vga_entry(char c, uint8_t color);
     void print_dec(unsigned long long value);
     void scroll();
-    void updateCursor();
+    void update_cursor();
 
 private:
     static constexpr size_t VGA_WIDTH = 80;

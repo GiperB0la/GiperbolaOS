@@ -1,13 +1,15 @@
 #include "Memory.hpp"
+#include "../../../drivers/Serial.hpp"
+#include "../../../drivers/VGA.hpp"
 
 
-Memory::Memory(uint32_t mb_addr)
+Memory::Memory(uint32_t* mb_addr)
     : mb_addr(mb_addr)
 {
     init();
 }
 
-Memory& Memory::instance(uint32_t mb_addr)
+Memory& Memory::instance(uint32_t* mb_addr)
 {
     static Memory memory(mb_addr);
     return memory;
@@ -15,20 +17,45 @@ Memory& Memory::instance(uint32_t mb_addr)
 
 void Memory::init()
 {
-    total_pages = 0;
-    free_pages = 0;
 
-    auto* tag = reinterpret_cast<multiboot_tag*>(mb_addr + 8);
-    while (tag->type != 0) {
-        if (tag->type == 6) {
+}
+
+void Memory::memory_info()
+{
+    Serial::instance().write("\n================= Memory map =================\n");
+    VGA::instance().print("\n================= Memory map =================\n");
+
+    auto* tag = reinterpret_cast<multiboot_tag*>((uint8_t*)mb_addr + 8);
+
+    uint64_t total_available = 0;
+
+    while (tag->type != MULTIBOOT_TAG_TYPE_END) {
+        if (tag->type == MULTIBOOT_TAG_TYPE_MMAP) {
             auto* mmap_tag = reinterpret_cast<multiboot_tag_mmap*>(tag);
-            auto* entry = reinterpret_cast<multiboot_mmap_entry*>(mmap_tag + 1);
+            auto* entry = mmap_tag->entries;
 
             while ((uint8_t*)entry < (uint8_t*)mmap_tag + mmap_tag->size) {
-                if (entry->type == 1) { // usable
-                    total_pages += entry->len / PAGE_SIZE;
+                Serial::instance().write("Base: ");
+                Serial::instance().write_hex((unsigned int)(entry->addr));
+                Serial::instance().write("  Length: ");
+                Serial::instance().write_hex((unsigned int)(entry->len));
+                Serial::instance().write("  Type: ");
+                Serial::instance().write((unsigned int)entry->type);
+                Serial::instance().write("\n");
+
+                VGA::instance().print("Base: ");
+                VGA::instance().print_hex((unsigned int)(entry->addr));
+                VGA::instance().print("  Length: ");
+                VGA::instance().print_hex((unsigned int)(entry->len));
+                VGA::instance().print("  Type: ");
+                VGA::instance().print((unsigned int)entry->type);
+                VGA::instance().print("\n");
+
+                if (entry->type == MULTIBOOT_MEMORY_AVAILABLE) {
+                    total_available += entry->len;
                 }
-                entry = reinterpret_cast<multiboot_mmap_entry*>(
+
+                entry = reinterpret_cast<multiboot_tag_mmap::multiboot_mmap_entry*>(
                     (uint8_t*)entry + mmap_tag->entry_size
                 );
             }
@@ -39,85 +66,40 @@ void Memory::init()
         );
     }
 
-    free_pages = total_pages;
+    Serial::instance().write("==============================================\n\n");
+    VGA::instance().print("==============================================\n\n");
 
-    extern uint32_t end;
-    bitmap = reinterpret_cast<uint32_t*>(&end);
+    uint64_t total_kb = total_available / 1024;
+    uint64_t total_pages = total_available / 4096;
 
-    for (size_t i = 0; i < total_pages / 32; i++) {
-        bitmap[i] = 0xFFFFFFFF;
-    }
+    Serial::instance().write("Total available memory: ");
+    Serial::instance().write((unsigned int)total_kb);
+    Serial::instance().write(" KB\n");
 
-    tag = reinterpret_cast<multiboot_tag*>(mb_addr + 8);
-    while (tag->type != 0) {
-        if (tag->type == 6) {
-            auto* mmap_tag = reinterpret_cast<multiboot_tag_mmap*>(tag);
-            auto* entry = reinterpret_cast<multiboot_mmap_entry*>(mmap_tag + 1);
+    Serial::instance().write("Total pages (4KB): ");
+    Serial::instance().write((unsigned int)total_pages);
+    Serial::instance().write("\n");
 
-            while ((uint8_t*)entry < (uint8_t*)mmap_tag + mmap_tag->size) {
-                if (entry->type == 1) {
-                    for (uint64_t a = entry->addr; a < entry->addr + entry->len; a += PAGE_SIZE) {
-                        size_t idx = a / PAGE_SIZE;
-                        clearBit(idx);
-                    }
-                }
-                entry = reinterpret_cast<multiboot_mmap_entry*>(
-                    (uint8_t*)entry + mmap_tag->entry_size
-                );
-            }
-        }
-        tag = reinterpret_cast<multiboot_tag*>(
-            (uint8_t*)tag + ((tag->size + 7) & ~7)
-        );
-    }
+    VGA::instance().print("Total available memory: ");
+    VGA::instance().print((unsigned int)total_kb);
+    VGA::instance().print(" KB\n");
 
-    for (uintptr_t a = 0; a < 0x100000; a += PAGE_SIZE) {
-        setBit(a / PAGE_SIZE);
-    }
+    VGA::instance().print("Total pages (4KB): ");
+    VGA::instance().print((unsigned int)total_pages);
+    VGA::instance().print("\n");
 }
 
-void* Memory::allocPage() 
-{
-    for (size_t i = 0; i < total_pages; i++) {
-        if (!testBit(i)) {
-            setBit(i);
-            free_pages--;
-            return reinterpret_cast<void*>(i * PAGE_SIZE);
-        }
-    }
-    return nullptr;
-}
-
-void Memory::freePage(void* addr) 
-{
-    size_t idx = reinterpret_cast<uintptr_t>(addr) / PAGE_SIZE;
-    if (testBit(idx)) {
-        clearBit(idx);
-        free_pages++;
-    }
-}
-
-size_t Memory::getFreeMemory() 
-{
-    return free_pages * PAGE_SIZE;
-}
-
-void Memory::setBit(size_t idx) 
+void Memory::set_bit(size_t idx)
 {
     bitmap[idx / 32] |= (1 << (idx % 32));
 }
 
-void Memory::clearBit(size_t idx) 
+void Memory::clear_bit(size_t idx)
 {
     bitmap[idx / 32] &= ~(1 << (idx % 32));
 }
 
-bool Memory::testBit(size_t idx) 
+bool Memory::test_bit(size_t idx)
 {
     return bitmap[idx / 32] & (1 << (idx % 32));
-}
-
-uint32_t Memory::getMbAddr() const
-{
-    return mb_addr;
 }

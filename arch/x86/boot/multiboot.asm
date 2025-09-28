@@ -1,10 +1,10 @@
 section .multiboot2
 align 8
 header_start:
-    dd 0xE85250D6              ; magic (Multiboot2)
-    dd 0                       ; architecture (0 = i386)
-    dd header_end - header_start ; header length
-    dd -(0xE85250D6 + 0 + (header_end - header_start)) ; checksum
+    dd 0xE85250D6
+    dd 0
+    dd header_end - header_start
+    dd -(0xE85250D6 + 0 + (header_end - header_start))
 
     dw 0    ; type = 0
     dw 0    ; flags = 0

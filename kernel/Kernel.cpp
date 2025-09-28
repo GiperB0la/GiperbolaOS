@@ -8,7 +8,7 @@
 #include "../arch/x86/memory/Memory.hpp"
 
 
-extern "C" void kmain(uint32_t magic, uint32_t addr)
+extern "C" void kmain(uint32_t magic, uint32_t* addr)
 {
     if (magic != MULTIBOOT2_BOOTLOADER_MAGIC) {
         VGA::instance().print("Invalid multiboot magic: ");
@@ -16,31 +16,35 @@ extern "C" void kmain(uint32_t magic, uint32_t addr)
         while (true) {}
     }
 
-    VGA::instance();
-    VGA::instance().print("Booting kernel...\n");
+    VGA::instance().print("Booting kernel...\n\n");
 
     GDT::instance();
-    VGA::instance().print("GDT initialized\n");
+    VGA::instance().print_status("GDT initialized", Status::OK);
+    Serial::instance().write("[ OK ] GDT initialized\n");
 
     IDT::instance();
-    VGA::instance().print("IDT initialized\n");
+    VGA::instance().print_status("IDT initialized", Status::OK);
+    Serial::instance().write("[ OK ] IDT initialized\n");
 
     asm volatile("sti");
-    VGA::instance().print("Interrupts enabled\n");
+    VGA::instance().print_status("Interrupts enabled", Status::OK);
+    Serial::instance().write("[ OK ] Interrupts enabled\n");
 
     Memory::instance(addr);
-    VGA::instance().print("Memory manager initialized\n");
+    VGA::instance().print_status("Memory manager initialized", Status::OK);
+    Serial::instance().write("[ OK ] Memory manager initialized\n");
 
     Keyboard::instance();
-    VGA::instance().print("Keyboard activated\n");
+    VGA::instance().print_status("Keyboard activated", Status::OK);
+    Serial::instance().write("[ OK ] Keyboard activated\n");
 
     VGA::instance().print("\n> ");
     while (true) {
-        if (Keyboard::instance().hasKey()) {
-            Shell::instance().handleInput(Keyboard::instance().getChar());
+        if (Keyboard::instance().has_key()) {
+            Shell::instance().handleInput(Keyboard::instance().get_char());
         }
 
-        if (Serial::instance().hasChar()) {
+        if (Serial::instance().has_char()) {
             VGA::instance().print(Serial::instance().read());
         }
     }

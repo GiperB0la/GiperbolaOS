@@ -12,7 +12,7 @@ public:
 
 private:
     void install();
-    void setGate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags);
+    void set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags);
 
 private:
     struct Entry {

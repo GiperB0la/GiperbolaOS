@@ -8,26 +8,22 @@
 class Memory
 {
 private:
-    Memory(uint32_t mb_addr);
+    Memory(uint32_t* mb_addr);
 
 public:
-    static Memory& instance(uint32_t mb_addr = 0);
+    static Memory& instance(uint32_t* mb_addr = nullptr);
 
 public:
-    void* allocPage();
-    void freePage(void* addr);
-    size_t getFreeMemory();
-    uint32_t getMbAddr() const;
+    void memory_info();
 
 private:
     void init();
-    void setBit(size_t idx);
-    void clearBit(size_t idx);
-    bool testBit(size_t idx);
+    void set_bit(size_t idx);
+    void clear_bit(size_t idx);
+    bool test_bit(size_t idx);
 
 private:
-    uint32_t* bitmap = nullptr;
-    size_t total_pages = 0;
-    size_t free_pages = 0;
-    uint32_t mb_addr;
+    uint32_t* mb_addr;
+    uint32_t* bitmap;
+    size_t bmp_size;
 };

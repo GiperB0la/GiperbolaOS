@@ -98,7 +98,7 @@ copy bin\kernel.bin bin\iso\boot\kernel.bin > nul
 
 wsl grub-mkrescue -o bin/GiperbolaOS.iso bin/iso
 
-wsl qemu-system-i386 -cdrom bin/GiperbolaOS.iso -serial stdio
+wsl qemu-system-i386 -cdrom bin/GiperbolaOS.iso -serial stdio -m 200M
 :; =====================================================================================================
 
 :: ============================
