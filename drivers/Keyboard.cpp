@@ -25,25 +25,25 @@ Keyboard& Keyboard::instance()
 
 void Keyboard::init() 
 {
-    head = tail = 0;
+    head_ = tail_ = 0;
 }
 
 bool Keyboard::has_key() 
 {
-    return head != tail;
+    return head_ != tail_;
 }
 
 char Keyboard::get_char() 
 {
-    if (head == tail) return 0;
-    char c = buffer[tail];
-    tail = (tail + 1) % sizeof(buffer);
+    if (head_ == tail_) return 0;
+    char c = buffer_[tail_];
+    tail_ = (tail_ + 1) % sizeof(buffer_);
     return c;
 }
 
 bool Keyboard::is_key_pressed(uint8_t scancode) 
 {
-    return keyStates[scancode];
+    return key_states_[scancode];
 }
 
 void Keyboard::handler()
@@ -52,14 +52,14 @@ void Keyboard::handler()
 
     if (scancode & 0x80) {
         scancode &= 0x7F;
-        keyStates[scancode] = false;
+        key_states_[scancode] = false;
     } 
     else {
-        keyStates[scancode] = true;
+        key_states_[scancode] = true;
         char c = scancode_char(scancode);
         if (c) {
-            buffer[head] = c;
-            head = (head + 1) % sizeof(buffer);
+            buffer_[head_] = c;
+            head_ = (head_ + 1) % sizeof(buffer_);
         }
     }
 }

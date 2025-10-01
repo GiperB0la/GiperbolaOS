@@ -34,27 +34,22 @@
 
 struct multiboot_tag 
 {
-    uint32_t type;
-    uint32_t size;
+    uint32_t type_;
+    uint32_t size_;
 };
 
 struct multiboot_tag_mmap 
 {
-    uint32_t type;
-    uint32_t size;
-    uint32_t entry_size;
-    uint32_t entry_version;
-    struct multiboot_mmap_entry {
-        uint64_t addr;
-        uint64_t len;
-        uint32_t type;
-        uint32_t zero;
-    } entries[0];
+    uint32_t type_;
+    uint32_t size_;
+    uint32_t entry_size_;  
+    uint32_t entry_version_;
 };
 
-struct multiboot_tag_string 
+struct multiboot_mmap_entry 
 {
-    uint32_t type;
-    uint32_t size;
-    char string[0];
+    uint64_t addr_;
+    uint64_t len_;
+    uint32_t type_;
+    uint32_t zero_;
 };

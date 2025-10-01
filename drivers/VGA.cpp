@@ -8,9 +8,9 @@ static inline void outb(uint16_t port, uint8_t val)
 
 VGA::VGA()
     : VGA_MEMORY((uint16_t*)0xB8000),
-      terminal_row(0),
-      terminal_col(0),
-      terminal_color(vga_color(Color::LightGray, Color::Black))
+      terminal_row_(0),
+      terminal_col_(0),
+      terminal_color_(vga_color(Color::LightGray, Color::Black))
 {
     clear();
 }
@@ -34,19 +34,19 @@ uint8_t VGA::vga_color(Color fg, Color bg)
 void VGA::print(char c)
 {
     if (c == '\n') {
-        terminal_col = 0;
-        terminal_row++;
+        terminal_col_ = 0;
+        terminal_row_++;
     } 
     else {
-        VGA_MEMORY[terminal_row * VGA_WIDTH + terminal_col] = vga_entry(c, terminal_color);
-        terminal_col++;
-        if (terminal_col >= VGA_WIDTH) {
-            terminal_col = 0;
-            terminal_row++;
+        VGA_MEMORY[terminal_row_ * VGA_WIDTH + terminal_col_] = vga_entry(c, terminal_color_);
+        terminal_col_++;
+        if (terminal_col_ >= VGA_WIDTH) {
+            terminal_col_ = 0;
+            terminal_row_++;
         }
     }
 
-    if (terminal_row >= VGA_HEIGHT) {
+    if (terminal_row_ >= VGA_HEIGHT) {
         scroll();
     }
 
@@ -232,17 +232,17 @@ void VGA::clear()
 {
     for (size_t y = 0; y < VGA_HEIGHT; y++) {
         for (size_t x = 0; x < VGA_WIDTH; x++) {
-            VGA_MEMORY[y * VGA_WIDTH + x] = vga_entry(' ', terminal_color);
+            VGA_MEMORY[y * VGA_WIDTH + x] = vga_entry(' ', terminal_color_);
         }
     }
-    terminal_row = 0;
-    terminal_col = 0;
+    terminal_row_ = 0;
+    terminal_col_ = 0;
     update_cursor();
 }
 
 void VGA::set_color(uint8_t color)
 {
-    terminal_color = color;
+    terminal_color_ = color;
 }
 
 void VGA::scroll()
@@ -253,14 +253,14 @@ void VGA::scroll()
         }
     }
     for (size_t x = 0; x < VGA_WIDTH; x++) {
-        VGA_MEMORY[(VGA_HEIGHT-1) * VGA_WIDTH + x] = vga_entry(' ', terminal_color);
+        VGA_MEMORY[(VGA_HEIGHT-1) * VGA_WIDTH + x] = vga_entry(' ', terminal_color_);
     }
-    terminal_row = VGA_HEIGHT - 1;
+    terminal_row_ = VGA_HEIGHT - 1;
 }
 
 void VGA::update_cursor()
 {
-    uint16_t pos = terminal_row * VGA_WIDTH + terminal_col;
+    uint16_t pos = terminal_row_ * VGA_WIDTH + terminal_col_;
     outb(0x3D4, 0x0F);
     outb(0x3D5, (uint8_t)(pos & 0xFF));
     outb(0x3D4, 0x0E);
@@ -269,12 +269,12 @@ void VGA::update_cursor()
 
 void VGA::move_cursor_back()
 {
-    if (terminal_col > 0) {
-        terminal_col--;
+    if (terminal_col_ > 0) {
+        terminal_col_--;
     }
-    else if (terminal_row > 0) {
-        terminal_row--;
-        terminal_col = VGA_WIDTH - 1;
+    else if (terminal_row_ > 0) {
+        terminal_row_--;
+        terminal_col_ = VGA_WIDTH - 1;
     }
     update_cursor();
 }

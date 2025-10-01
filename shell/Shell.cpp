@@ -11,25 +11,25 @@ Shell& Shell::instance()
     return shell;
 }
 
-void Shell::handleInput(char c)
+void Shell::handle_input(char c)
 {
     if (c == '\n') {
-        buffer[pos] = '\0';
+        buffer_[pos_] = '\0';
         execute_command();
-        pos = 0;
+        pos_ = 0;
         VGA::instance().print("\n> ");
     }
     else if (c == '\b') {
-        if (pos > 0) {
-            pos--;
+        if (pos_ > 0) {
+            pos_--;
             VGA::instance().move_cursor_back();
             VGA::instance().print(' ');
             VGA::instance().move_cursor_back();
         }
     }
     else {
-        if (pos < sizeof(buffer) - 1) {
-            buffer[pos++] = c;
+        if (pos_ < sizeof(buffer_) - 1) {
+            buffer_[pos_++] = c;
             VGA::instance().print(c);
         }
     }
@@ -37,27 +37,27 @@ void Shell::handleInput(char c)
 
 void Shell::execute_command() 
 {
-    if (strcmp(buffer, "clear") == 0) {
+    if (strcmp(buffer_, "clear") == 0) {
         clear();
     }
-    else if (strcmp(buffer, "cls") == 0) {
+    else if (strcmp(buffer_, "cls") == 0) {
         clear();
     }
-    else if (strcmp(buffer, "help") == 0) {
+    else if (strcmp(buffer_, "help") == 0) {
         help();
     }
-    else if (strcmp(buffer, "memory") == 0) {
+    else if (strcmp(buffer_, "memory") == 0) {
         memory();
     }
-    else if (strcmp(buffer, "reboot") == 0) {
+    else if (strcmp(buffer_, "reboot") == 0) {
         reboot();
     }
-    else if (strcmp(buffer, "shutdown") == 0) {
+    else if (strcmp(buffer_, "shutdown") == 0) {
         shutdown();
     }
     else {
         VGA::instance().print("\nUnknown command: ");
-        VGA::instance().print(buffer);
+        VGA::instance().print(buffer_);
         VGA::instance().print("\n");
     }
 }
@@ -85,7 +85,6 @@ void Shell::help()
     VGA::instance().print("\nAvailable commands:\n");
 
     for (auto& cmd : commands) {
-        // выравнивание под 12 символов
         VGA::instance().print("  ");
         VGA::instance().print(cmd.name);
         int len = strlen(cmd.name);

@@ -30,5 +30,5 @@ SECTIONS
         *(COMMON)
     }
 
-    end  = .;
+    kernel_end  = .;
 }

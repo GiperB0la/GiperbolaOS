@@ -6,6 +6,9 @@ class IDT
 {
 private:
     IDT();
+    ~IDT() = default;
+    IDT(const IDT&) = delete;
+    IDT& operator=(const IDT&) = delete;
 
 public:
     static IDT& instance();
@@ -28,6 +31,6 @@ private:
         uint32_t base;
     } __attribute__((packed));
 
-    Entry idt_entries[256];
-    Ptr idt_ptr;
+    Entry idt_entries_[256];
+    Ptr idt_ptr_;
 };

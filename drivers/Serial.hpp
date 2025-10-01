@@ -5,6 +5,9 @@ class Serial
 {
 private:
     Serial();
+    ~Serial() = default;
+    Serial(const Serial&) = delete;
+    Serial& operator=(const Serial&) = delete;
 
 public:
     static Serial& instance();
@@ -35,6 +38,6 @@ private:
     static constexpr uint16_t COM1_PORT = 0x3F8;
     static constexpr int BUFFER_SIZE = 128;
     char buffer[BUFFER_SIZE];
-    int head = 0;
-    int tail = 0;
+    int head_ = 0;
+    int tail_ = 0;
 };

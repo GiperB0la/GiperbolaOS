@@ -8,7 +8,7 @@ private:
 
 public:
     static Shell& instance();
-    void handleInput(char c);
+    void handle_input(char c);
 
 private:
     void execute_command();
@@ -19,6 +19,6 @@ private:
     void shutdown();
 
 private:
-    char buffer[128];
-    size_t pos;
+    char buffer_[128];
+    size_t pos_;
 };

@@ -26,8 +26,8 @@ void IDT::install()
 {
     pic_remap(0x20, 0x28);
 
-    idt_ptr.limit = sizeof(Entry) * 256 - 1;
-    idt_ptr.base  = (uint32_t)&idt_entries;
+    idt_ptr_.limit = sizeof(Entry) * 256 - 1;
+    idt_ptr_.base  = (uint32_t)&idt_entries_;
 
     for (int i = 0; i < 256; i++) {
         set_gate(i, 0, 0, 0);
@@ -43,14 +43,14 @@ void IDT::install()
     set_gate(0x23, (uint32_t)irq3_stub, 0x08, 0x8E); // IRQ3 (COM2)
     set_gate(0x24, (uint32_t)irq4_stub, 0x08, 0x8E); // IRQ4 (COM1)
 
-    idt_load((uint32_t)&idt_ptr);
+    idt_load((uint32_t)&idt_ptr_);
 }
 
 void IDT::set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags)
 {
-    idt_entries[num].base_low  = base & 0xFFFF;
-    idt_entries[num].sel       = sel;
-    idt_entries[num].always0   = 0;
-    idt_entries[num].flags     = flags;
-    idt_entries[num].base_high = (base >> 16) & 0xFFFF;
+    idt_entries_[num].base_low  = base & 0xFFFF;
+    idt_entries_[num].sel       = sel;
+    idt_entries_[num].always0   = 0;
+    idt_entries_[num].flags     = flags;
+    idt_entries_[num].base_high = (base >> 16) & 0xFFFF;
 }

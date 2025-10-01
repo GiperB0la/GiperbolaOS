@@ -193,22 +193,22 @@ void Serial::write_hex(unsigned long long value)
 void Serial::handle_interrupt() 
 {
     char c = port_byte_in(COM1_PORT);
-    int next = (head + 1) % BUFFER_SIZE;
-    if (next != tail) {
-        buffer[head] = c;
-        head = next;
+    int next = (head_ + 1) % BUFFER_SIZE;
+    if (next != tail_) {
+        buffer[head_] = c;
+        head_ = next;
     }
 }
 
 bool Serial::has_char()
 {
-    return head != tail;
+    return head_ != tail_;
 }
 
 char Serial::read()
 {
-    if (head == tail) return 0;
-    char c = buffer[tail];
-    tail = (tail + 1) % BUFFER_SIZE;
+    if (head_ == tail_) return 0;
+    char c = buffer[tail_];
+    tail_ = (tail_ + 1) % BUFFER_SIZE;
     return c;
 }

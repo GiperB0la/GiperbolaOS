@@ -34,6 +34,9 @@ public:
 
 private:
     VGA();
+    ~VGA() = default;
+    VGA(const VGA&) = delete;
+    VGA& operator=(const VGA&) = delete;
 
 public:
     static VGA& instance();
@@ -67,7 +70,7 @@ private:
     static constexpr size_t VGA_WIDTH = 80;
     static constexpr size_t VGA_HEIGHT = 25;
     volatile uint16_t* const VGA_MEMORY;
-    size_t terminal_row;
-    size_t terminal_col;
-    uint8_t terminal_color;
+    size_t terminal_row_;
+    size_t terminal_col_;
+    uint8_t terminal_color_;
 };
